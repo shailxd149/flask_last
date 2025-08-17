@@ -36,7 +36,7 @@ def simple_generate():
         "styleWeight": data.get("styleWeight", 0.65),
         "weirdnessConstraint": data.get("weirdnessConstraint", 0.65),
         "audioWeight": data.get("audioWeight", 0.65),
-        "callBackUrl": "http://127.0.0.1:5000/generate-music-callback"
+        "callBackUrl": "https://web-production-7eaf4.up.railway.app/generate-music-callback"
     }
     headers = {
         "Authorization": "Bearer daee188fbb5f871c5778603e45c2ffc8",
@@ -127,5 +127,6 @@ def get_task_result(task_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
