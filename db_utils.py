@@ -1,10 +1,15 @@
 import sqlite3
-DB_PATH = 'music.db'
-def store_music_data(task_id, callback_type, music_data):
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("""
+import os
+
+DB_FOLDER = "data"
+DB_PATH = os.path.join(DB_FOLDER, "db.sqlite")
+os.makedirs(DB_FOLDER, exist_ok=True)  # Ensure folder exists
+
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS generated_music (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             task_id TEXT,
@@ -16,7 +21,20 @@ def store_music_data(task_id, callback_type, music_data):
             image_url TEXT,
             received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
-        """)
+    """)
+
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_task_id ON generated_music(task_id);
+    """)
+
+    conn.commit()
+    conn.close()
+    print("✅ Database initialized at", DB_PATH)
+
+def store_music_data(task_id, callback_type, music_data):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
 
         for music in music_data:
             cursor.execute("""
@@ -34,7 +52,7 @@ def store_music_data(task_id, callback_type, music_data):
 
         conn.commit()
         conn.close()
-        print("✅ Stored in music.db")
+        print("✅ Stored in", DB_PATH)
     except Exception as e:
         print(f"❌ DB insert failed: {e}")
 
@@ -65,4 +83,3 @@ def fetch_music_by_task_id(task_id):
     except Exception as e:
         print(f"❌ DB fetch failed: {e}")
         return None
-
