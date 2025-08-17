@@ -8,6 +8,8 @@ from db_utils import fetch_music_by_task_id  # Add this at the top
 import json
 import requests
 
+init_db()  # ← runs on both local and Railway
+
 app = Flask(__name__)
 
 results = {}  # task_id → list of tracks
@@ -178,6 +180,7 @@ def view_db():
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
+
 
 
 
