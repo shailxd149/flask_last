@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .then((data) => {
         console.log("✅ Task started:", data);
-        const taskId = data.response?.data?.task_id;
+        const taskId = data.response?.data?.taskId;
         console.log("🎯 Extracted taskId:", taskId);
         if (taskId) {
           console.log("we are calling pollforTask");
@@ -404,6 +404,7 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
 
 
 
