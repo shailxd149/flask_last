@@ -100,15 +100,28 @@ function pollForResult(taskId) {
       console.log("⏹️ Max polling attempts reached.");
 
       // Final fetch before exit
-      fetch(`/api/task-tracks/${taskId}`)
-       .then((res) => res.json())
-       .then((data) => {
-         const tracks = Array.isArray(data) ? data : Object.values(data);
-        handleSubmitResponse(tracks); // ✅ Final render
-        });
+      fetch(`/get-task-result/${taskId}`)
+      .then((res) => {
+      if (!res.ok) {
+      console.warn(`⚠️ Final fetch failed with status ${res.status}`);
+      document.getElementById("column3").innerHTML = `
+        <p style="color: #a00;">⚠️ No results found for this task.</p>
+      `;
+      return null;
+     }
+    return res.json();
+    })
+    .then((data) => {
+     if (!data) return;
 
-      clearInterval(interval);
-      return;
+     const tracks = Array.isArray(data) ? data : Object.values(data);
+     handleSubmitResponse(tracks); // ✅ Final render
+      });
+
+     clearInterval(poll);
+     return;
+
+
     }
 
     attempts++;
@@ -425,6 +438,7 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
 
 
 
