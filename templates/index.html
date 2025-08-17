@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creative Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+  </head>
+  <body>
+    <!-- 🔳 Full horizontal layout -->
+    <div class="dashboard">
+      <!-- 🟫 Sidebar -->
+      <div class="sidebar">
+        <div class="user-info">
+          <h2>Signed in as</h2>
+          <div class="username">monksnwarrior</div>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="nav-button active" onclick="setActive(this)">
+            Home
+          </button>
+          <button class="nav-button" onclick="setActive(this)">Create</button>
+          <button class="nav-button" onclick="setActive(this)">Library</button>
+          <button class="nav-button" onclick="setActive(this)">Search</button>
+          <button class="nav-button" onclick="setActive(this)">Radio</button>
+          <button class="nav-button" onclick="setActive(this)">Explore</button>
+          <button class="nav-button" onclick="setActive(this)">
+            Notifications
+          </button>
+          <button class="nav-button" onclick="setActive(this)">Logout</button>
+        </div>
+      </div>
+
+      <!-- 🟨 Column 2: Prompt + Controls -->
+      <div class="column column2">
+        <!-- 🔳 Top Navbar Section -->
+        <div id="section-navbar" class="navbar">
+          <!-- 🔧 Left: Settings Icon with Dropdown -->
+          <div class="navbar-left">
+            <div class="settings-dropdown">
+              <button class="settings-icon" onclick="toggleSettings()">
+                ⚙️
+              </button>
+              <div class="dropdown-menu" id="settingsMenu">
+                <button>Theme</button>
+                <button>Export</button>
+                <button>About</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 🔄 Center: Mode Switch Tabs -->
+          <div class="navbar-center">
+            <div class="mode-switch">
+              <button class="tab active" onclick="switchMode('simple')">
+                Simple
+              </button>
+              <button class="tab" onclick="switchMode('custom')">Custom</button>
+            </div>
+          </div>
+
+          <!-- 🧠 Right: LLM Model Selector -->
+          <div class="navbar-right">
+            <select class="llm-selector" onchange="selectLLM(this.value)">
+              <option value="gpt-4">GPT-4</option>
+              <option value="claude">Claude</option>
+              <option value="gemini">Gemini</option>
+            </select>
+          </div>
+        </div>
+        <!-- 🎨 Simple Tab Content starts-->
+        <div id="simple-tab-content" class="tab-section">
+          <!-- 📝 Prompt Box Section -->
+          <div id="section-description" class="prompt-box">
+            <!-- Label for clarity -->
+            <label for="songPrompt" class="prompt-label"
+              >Describe your song:</label
+            >
+
+            <!-- Textarea for user input -->
+            <textarea
+              id="songPrompt"
+              class="prompt-input"
+              placeholder="e.g. Chaotic synth song about breaking curfew"
+              rows="4"
+            ></textarea>
+          </div>
+          <!-- 🎶 Genre Selector Section -->
+          <div id="section-genres" class="genre-selector">
+            <label class="genre-label">Select genres:</label>
+            <div class="genre-options">
+              <!-- Each genre is a toggleable button -->
+              <button class="genre-btn" data-genre="Synthpop">Synthpop</button>
+              <button class="genre-btn" data-genre="Lo-fi">Lo-fi</button>
+              <button class="genre-btn" data-genre="Jazz">Jazz</button>
+              <button class="genre-btn" data-genre="Ambient">Ambient</button>
+              <button class="genre-btn" data-genre="Techno">Techno</button>
+              <button class="genre-btn" data-genre="Classical">
+                Classical
+              </button>
+              <!-- Add more genres as needed -->
+            </div>
+          </div>
+          <!-- 🚀 Submit Button Section -->
+          <div id="section-submit" class="submit-container">
+            <button id="submitBtn" class="submit-btn">
+              Generate with Suno
+            </button>
+          </div>
+          <!-- ⏳ Spinner Section -->
+          <div
+            id="section-spinner"
+            class="spinner-container"
+            style="display: none"
+          >
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <!-- 🎨 Simple Tab Content ends-->
+
+        <!-- 🎨 Custom Tab Content starts-->
+        <!-- 🎨 Custom Tab Content -->
+        <div id="custom-tab-content" class="tab-section" style="display: none">
+          <!-- 📝 Lyrics Input Section -->
+          <div id="lyrics-section" class="section-block">
+            <label for="lyricsInput" class="section-label">Enter Lyrics:</label>
+            <textarea
+              id="lyricsInput"
+              class="section-textarea"
+              placeholder="Type your lyrics here..."
+              rows="4"
+            ></textarea>
+
+            <!-- 🎚️ Instrumental Toggle -->
+            <div class="toggle-row">
+              <label for="instrumentalToggle">Instrumental Only:</label>
+              <input type="checkbox" id="instrumentalToggle" />
+            </div>
+          </div>
+
+          <!-- 🎨 Style Selector Section -->
+          <div id="style-section" class="section-block">
+            <!-- 🧠 Custom Style Prompt -->
+            <input
+              type="text"
+              id="stylePromptInput"
+              class="section-input"
+              placeholder="Add your own styles, e.g. ethereal, cinematic"
+            />
+
+            <label class="section-label">Select Style Tags:</label>
+            <div class="style-tags">
+              <button class="style-tag">Dreamy</button>
+              <button class="style-tag">Aggressive</button>
+              <button class="style-tag">Retro</button>
+              <button class="style-tag">Dark</button>
+              <button class="style-tag">Uplifting</button>
+            </div>
+            <!-- 🧹 Clear Button Below Tags -->
+            <div class="clear-style-row">
+              <button id="clearStylePrompt" class="clear-btn">
+                Clear Styles
+              </button>
+            </div>
+          </div>
+
+          <!-- ⚙️ Advanced Options Toggle -->
+          <div class="toggle-row">
+            <label for="advancedToggle">Show Advanced Options:</label>
+            <input type="checkbox" id="advancedToggle" />
+          </div>
+
+          <!-- ⚙️ Advanced Controls Section -->
+          <div
+            id="advanced-section"
+            class="section-block"
+            style="display: none"
+          >
+            <label for="weirdnessSlider" class="section-label"
+              >Weirdness:</label
+            >
+            <input
+              type="range"
+              id="weirdnessSlider"
+              min="0"
+              max="100"
+              value="50"
+            />
+
+            <label for="styleSlider" class="section-label"
+              >Style Influence:</label
+            >
+            <input type="range" id="styleSlider" min="0" max="100" value="50" />
+          </div>
+
+          <!-- 🏷️ More Options Section -->
+          <div id="more-section" class="section-block">
+            <label for="songTitle" class="section-label">Song Title:</label>
+            <input
+              type="text"
+              id="songTitle"
+              class="section-input"
+              placeholder="e.g. Midnight Echoes"
+            />
+          </div>
+
+          <!-- 🚀 Create Button -->
+          <div id="custom-submit" class="customSubmit-container">
+            <button id="customSubmitBtn" class="customSubmit-btn">
+              Create with Suno
+            </button>
+          </div>
+
+          <!-- ⏳ Spinner -->
+          <div
+            id="custom-spinner"
+            class="spinner-container"
+            style="display: none"
+          >
+            <div class="spinner"></div>
+          </div>
+        </div>
+        <!-- 🎨 Custom Tab Content ends -->
+        <!-- 🧱 Column 2 Content Section -->
+        <div class="column2-content">
+          <p>Next section will go here. This is the end of column 2</p>
+        </div>
+      </div>
+      <!-- End of Column 2 -->
+      <!-- Column 3--Starts -->
+      <!-- Column 3: Output Panel -->
+      <div class="column column-3">
+        <div class="output-header">
+          <h3>🎧 Generated Tracks</h3>
+        </div>
+        <div id="outputContainer" class="output-body"></div>
+      </div>
+
+      <!-- Optional Lyrics Panel -->
+      <div id="lyricsPanel" class="lyrics-panel hidden">
+        <button id="closeLyricsBtn" class="close-btn">✖</button>
+        <h3>📝 Lyrics</h3>
+        <pre id="lyricsContent" class="lyrics-box"></pre>
+      </div>
+      <!-- Column 3--Ends -->
+    </div>
+    <!-- End of Dashboard -->
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
+</html>
