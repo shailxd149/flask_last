@@ -1,4 +1,7 @@
 from flask import Flask, render_template, request, jsonify
+from db_utils import store_music_data
+from db_utils import fetch_music_by_task_id  # Add this at the top
+import json
 import requests
 
 app = Flask(__name__)
@@ -13,8 +16,8 @@ def home():
 
 # 🔐 Suno API config
 SUNO_API_URL = "https://api.sunoapi.org/api/v1/generate"
-API_KEY = "269dd2f7cd71722ba036d9ce2ffa62cc"  # Replace with your actual key
-CALLBACK_URL = "https://web-production-7eaf4.up.railway.app/generate-music-callback"
+API_KEY = "daee188fbb5f871c5778603e45c2ffc8"  # Replace with your actual key
+CALLBACK_URL = "http://127.0.0.1:5000/generate-music-callback"
 
 
 # 🚀 Submit generation request
@@ -36,10 +39,10 @@ def simple_generate():
         "styleWeight": data.get("styleWeight", 0.65),
         "weirdnessConstraint": data.get("weirdnessConstraint", 0.65),
         "audioWeight": data.get("audioWeight", 0.65),
-        "callBackUrl": "https://web-production-7eaf4.up.railway.app/generate-music-callback"
+        "callBackUrl": "http://127.0.0.1:5000/generate-music-callback"
     }
     headers = {
-        "Authorization": "Bearer 269dd2f7cd71722ba036d9ce2ffa62cc",
+        "Authorization": "Bearer daee188fbb5f871c5778603e45c2ffc8",
         "Content-Type": "application/json"
     }
     url = "https://api.sunoapi.org/api/v1/generate"
@@ -65,20 +68,23 @@ def simple_generate():
 @app.route('/generate-music-callback', methods=['POST'])
 def handle_callback():
     data = request.json
-    
+
     code = data.get('code')
     msg = data.get('msg')
     callback_data = data.get('data', {})
     task_id = callback_data.get('task_id')
     callback_type = callback_data.get('callbackType')
     music_data = callback_data.get('data', [])
-    
+
     print(f"Received music generation callback: {task_id}, type: {callback_type}, status: {code}, message: {msg}")
-    
+
     if code == 200:
         # Task completed successfully
         print("Music generation completed")
-        
+
+        # Store in SQLite
+        store_music_data(task_id, callback_type, music_data)
+
         print(f"Generated {len(music_data)} music tracks:")
         for i, music in enumerate(music_data):
             print(f"Music {i + 1}:")
@@ -87,7 +93,7 @@ def handle_callback():
             print(f"  Tags: {music.get('tags')}")
             print(f"  Audio URL: {music.get('audio_url')}")
             print(f"  Cover URL: {music.get('image_url')}")
-            
+
             # Download audio file example
             try:
                 audio_url = music.get('audio_url')
@@ -100,11 +106,10 @@ def handle_callback():
                         print(f"Audio saved as {filename}")
             except Exception as e:
                 print(f"Audio download failed: {e}")
-                
     else:
         # Task failed
         print(f"Music generation failed: {msg}")
-        
+
         # Handle failure cases...
         if code == 400:
             print("Parameter error or content violation")
@@ -112,21 +117,22 @@ def handle_callback():
             print("File download failed")
         elif code == 500:
             print("Server internal error")
-    
+
     # Return 200 status code to confirm callback received
     return jsonify({'status': 'received'}), 200
+
 
 @app.route('/get-task-result/<task_id>', methods=['GET'])
 def get_task_result(task_id):
     try:
         print(f"🔍 Incoming GET for task_id: {task_id}")
-        print(f"📦 Available keys: {list(callback_results.keys())}")
-        result = callback_results.get(task_id)
+        result = fetch_music_by_task_id(task_id)
+
         if result:
-            print(f"✅ Returning result: {result}")
+            print(f"✅ Returning {len(result)} tracks")
             return jsonify(result), 200
         else:
-            print("⏳ Task still pending.")
+            print("⏳ Task still pending or not found.")
             return jsonify({'status': 'pending'}), 202
     except Exception as e:
         print("❌ Exception in get-task-result:", str(e))
@@ -135,8 +141,4 @@ def get_task_result(task_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
 
