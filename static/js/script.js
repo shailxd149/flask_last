@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .then((data) => {
         console.log("✅ Task started:", data);
-        const taskId = data.task_id;
+        const taskId = data.taskId;
         if (taskId) {
           console.log("we are calling pollforTask");
           // begin polling; pollForResult will clear spinner + re-enable button
@@ -403,4 +403,5 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
 
