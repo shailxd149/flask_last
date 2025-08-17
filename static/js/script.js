@@ -107,7 +107,7 @@ function pollForResult(taskId) {
         handleSubmitResponse(tracks); // ✅ Final render
         });
 
-      clearInterval(poll);
+      clearInterval(interval);
       return;
     }
 
@@ -425,6 +425,7 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
 
 
 
