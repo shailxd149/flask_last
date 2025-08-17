@@ -101,26 +101,21 @@ function pollForResult(taskId) {
 
       // Final fetch before exit
       fetch(`/get-task-result/${taskId}`)
-      .then((res) => {
-      if (!res.ok) {
-      console.warn(`⚠️ Final fetch failed with status ${res.status}`);
-      document.getElementById("column3").innerHTML = `
-        <p style="color: #a00;">⚠️ No results found for this task.</p>
-      `;
-      return null;
-     }
-    return res.json();
-    })
-    .then((data) => {
-     if (!data) return;
+        .then((res) => {
+          if (!res.ok) {
+            console.warn(`⚠️ Final fetch failed with status ${res.status}`);
+            return null;
+          }
+          return res.json();
+        })
+        .then((data) => {
+          if (!data) return;
+          const tracks = Array.isArray(data) ? data : Object.values(data);
+          handleSubmitResponse(tracks); // ✅ Final render
+        });
 
-     const tracks = Array.isArray(data) ? data : Object.values(data);
-     handleSubmitResponse(tracks); // ✅ Final render
-      });
-
-     clearInterval(poll);
-     return;
-
+      clearInterval(interval);
+      return;
 
     }
 
@@ -438,6 +433,7 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
 
 
 
