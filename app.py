@@ -1,10 +1,14 @@
 from flask import Flask, render_template, request, jsonify
+import os
+from db_utils import DB_PATH
+from db_utils import init_db
 from db_utils import store_music_data
 from db_utils import fetch_music_by_task_id  # Add this at the top
 import json
 import requests
 
 app = Flask(__name__)
+
 results = {}  # task_id → list of tracks
 callback_results = {}
 
@@ -17,7 +21,7 @@ def home():
 # 🔐 Suno API config
 SUNO_API_URL = "https://api.sunoapi.org/api/v1/generate"
 API_KEY = "7be67376511d51dc034e66b7c6d35748"  # Replace with your actual key
-CALLBACK_URL = "http://127.0.0.1:5000/generate-music-callback"
+CALLBACK_URL = "https://web-production-7eaf4.up.railway.app/generate-music-callback"
 
 
 # 🚀 Submit generation request
@@ -39,7 +43,7 @@ def simple_generate():
         "styleWeight": data.get("styleWeight", 0.65),
         "weirdnessConstraint": data.get("weirdnessConstraint", 0.65),
         "audioWeight": data.get("audioWeight", 0.65),
-        "callBackUrl": "http://127.0.0.1:5000/generate-music-callback"
+        "callBackUrl": "https://web-production-7eaf4.up.railway.app/generate-music-callback"
     }
     headers = {
         "Authorization": "Bearer 7be67376511d51dc034e66b7c6d35748",
@@ -138,8 +142,41 @@ def get_task_result(task_id):
         print("❌ Exception in get-task-result:", str(e))
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+@app.route('/admin/view-db', methods=['GET'])
+def view_db():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT task_id, callback_type, title, duration, tags, audio_url, image_url, received_at
+            FROM generated_music
+            ORDER BY received_at DESC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
 
+        result = []
+        for row in rows:
+            result.append({
+                "task_id": row[0],
+                "callback_type": row[1],
+                "title": row[2],
+                "duration": row[3],
+                "tags": row[4].split(',') if row[4] else [],
+                "audio_url": row[5],
+                "image_url": row[6],
+                "received_at": row[7]
+            })
+
+        print(f"📊 Returning {len(result)} rows from DB")
+        return jsonify(result), 200
+    except Exception as e:
+        print(f"❌ Error in view-db: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
 if __name__ == "__main__":
+    init_db()
     app.run(debug=True)
+
 
 
