@@ -13,7 +13,7 @@ def home():
 
 # 🔐 Suno API config
 SUNO_API_URL = "https://api.sunoapi.org/api/v1/generate"
-API_KEY = "daee188fbb5f871c5778603e45c2ffc8"  # Replace with your actual key
+API_KEY = "269dd2f7cd71722ba036d9ce2ffa62cc"  # Replace with your actual key
 CALLBACK_URL = "https://web-production-7eaf4.up.railway.app/generate-music-callback"
 
 
@@ -39,7 +39,7 @@ def simple_generate():
         "callBackUrl": "https://web-production-7eaf4.up.railway.app/generate-music-callback"
     }
     headers = {
-        "Authorization": "Bearer daee188fbb5f871c5778603e45c2ffc8",
+        "Authorization": "Bearer 269dd2f7cd71722ba036d9ce2ffa62cc",
         "Content-Type": "application/json"
     }
     url = "https://api.sunoapi.org/api/v1/generate"
@@ -135,6 +135,7 @@ def get_task_result(task_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
