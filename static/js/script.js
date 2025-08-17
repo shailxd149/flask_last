@@ -156,9 +156,6 @@ function handleSubmitResponse(response) {
   console.log("we are inside handle response");
   // 1. Normalize track array (adjust path if your API differs)
   if (!tracks || tracks.length === 0) {
-    document.getElementById("column3").innerHTML = `
-      <p style="color: #a00;">⚠️ No tracks available yet. Try again later.</p>
-    `;
     return;
   }
   
@@ -433,6 +430,7 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
 
 
 
