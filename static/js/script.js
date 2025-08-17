@@ -24,6 +24,14 @@ document.querySelectorAll(".genre-btn").forEach((btn) => {
     btn.classList.toggle("selected");
   });
 });
+function fetchWithTimeout(url, timeout = 5000) {
+  return Promise.race([
+    fetch(url),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout")), timeout)
+    ),
+  ]);
+}
 document.addEventListener("DOMContentLoaded", () => {
   const submitBtn = document.getElementById("submitBtn");
   const genreButtons = document.querySelectorAll(".genre-btn");
@@ -64,8 +72,10 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("✅ Task started:", data);
         const taskId = data.task_id;
         if (taskId) {
+          console.log("we are calling pollforTask");
           // begin polling; pollForResult will clear spinner + re-enable button
           pollForResult(taskId);
+          console.log("we are past pollforTask");
         } else {
           spinner.style.display = "none";
           submitBtn.disabled = false;
@@ -81,15 +91,35 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 function pollForResult(taskId) {
+  console.log("polling started", taskId);
+   let attempts = 0;
+  const maxAttempts = 20;
   const interval = setInterval(() => {
-    fetch(`/get-task-result/${taskId}`)
+    if (attempts >= maxAttempts) {
+      clearInterval(interval);
+      console.warn("⏹️ Max polling attempts reached.");
+      document.getElementById("section-spinner").style.display = "none";
+      document.getElementById("submitBtn").disabled = false;
+      alert("Timeout: No response from server.");
+      return;
+    }
+
+    attempts++;
+    console.log(`⏳ Poll attempt ${attempts}/${maxAttempts}`);
+
+    fetchWithTimeout(`/get-task-result/${taskId}`, 5000)
       .then((res) => {
-        if (res.status === 202) return null; // still processing
+        console.log("📡 Response status:", res.status);
+        if (res.status === 202) {
+          console.log("we have 202 status and we are returning null");
+          return null;
+        }
         if (!res.ok) throw new Error("Polling failed");
         return res.json();
       })
       .then((json) => {
-        if (!json) return; // still pending
+        console.log("we are getting to json part", json);
+        if (!json || json.status !== "done") return; // still pending
         clearInterval(interval);
         console.log("🎉 Generation ready:", json);
         handleSubmitResponse(json); // your existing renderer
@@ -107,6 +137,7 @@ function pollForResult(taskId) {
 }
 
 function handleSubmitResponse(response) {
+  console.log("we are inside handle response");
   // 1. Normalize track array (adjust path if your API differs)
   const tracks = response.tracks || response.data?.data || [];
 
@@ -139,6 +170,7 @@ function handleSubmitResponse(response) {
     `;
 
     outputContainer.appendChild(figure);
+    console.log("We have appended the figure to output container");
   });
 
   // 5. If the first track carries a `prompt` (lyrics), show the panel
@@ -371,3 +403,4 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
