@@ -118,15 +118,24 @@ def handle_callback():
 
 @app.route('/get-task-result/<task_id>', methods=['GET'])
 def get_task_result(task_id):
-    result = callback_results.get(task_id)
-    if result:
-        return jsonify(result), 200
-    else:
-        return jsonify({'status': 'pending'}), 202
+    try:
+        print(f"🔍 Incoming GET for task_id: {task_id}")
+        print(f"📦 Available keys: {list(callback_results.keys())}")
+        result = callback_results.get(task_id)
+        if result:
+            print(f"✅ Returning result: {result}")
+            return jsonify(result), 200
+        else:
+            print("⏳ Task still pending.")
+            return jsonify({'status': 'pending'}), 202
+    except Exception as e:
+        print("❌ Exception in get-task-result:", str(e))
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
