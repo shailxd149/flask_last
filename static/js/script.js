@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function pollForResult(taskId) {
   console.log("polling started", taskId);
    let attempts = 0;
-  const maxAttempts = 20;
+  const maxAttempts = 500;
   const interval = setInterval(() => {
     if (attempts >= maxAttempts) {
       clearInterval(interval);
@@ -404,6 +404,7 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
 
 
 
