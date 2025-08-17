@@ -94,14 +94,20 @@ document.addEventListener("DOMContentLoaded", () => {
 function pollForResult(taskId) {
   console.log("polling started", taskId);
    let attempts = 0;
-  const maxAttempts = 500;
+  const maxAttempts = 30;
   const interval = setInterval(() => {
     if (attempts >= maxAttempts) {
-      clearInterval(interval);
-      console.warn("⏹️ Max polling attempts reached.");
-      document.getElementById("section-spinner").style.display = "none";
-      document.getElementById("submitBtn").disabled = false;
-      alert("Timeout: No response from server.");
+      console.log("⏹️ Max polling attempts reached.");
+
+      // Final fetch before exit
+      fetch(`/api/task-tracks/${taskId}`)
+       .then((res) => res.json())
+       .then((data) => {
+         const tracks = Array.isArray(data) ? data : Object.values(data);
+        handleSubmitResponse(tracks); // ✅ Final render
+        });
+
+      clearInterval(poll);
       return;
     }
 
@@ -138,9 +144,16 @@ function pollForResult(taskId) {
 }
 
 function handleSubmitResponse(response) {
+  const tracks = response.tracks || response.data?.data || [];
   console.log("we are inside handle response");
   // 1. Normalize track array (adjust path if your API differs)
-  const tracks = response.tracks || response.data?.data || [];
+  if (!tracks || tracks.length === 0) {
+    document.getElementById("column3").innerHTML = `
+      <p style="color: #a00;">⚠️ No tracks available yet. Try again later.</p>
+    `;
+    return;
+  }
+  
 
   // 2. Grab our DOM elements
   const outputContainer = document.getElementById("outputContainer");
@@ -160,6 +173,14 @@ function handleSubmitResponse(response) {
   tracks.forEach((track) => {
     const figure = document.createElement("figure");
     figure.className = "track-block";
+    const title = track.title || "Untitled Track";
+    const tags = track.tags || "";
+    const audio = track.audio_url
+      ? `<audio controls src="${track.audio_url}"></audio>`
+      : `<p style="color: #888;">⏳ Audio not ready</p>`;
+    const image = track.image_url
+      ? `<img src="${track.image_url}" width="100" style="margin-bottom: 0.5rem;">`
+      : "";
 
     figure.innerHTML = `
       <figcaption>
@@ -404,6 +425,7 @@ function resetFields() {
   advancedToggle.checked = false;
   songTitleInput.value = "";
 }
+
 
 
 
