@@ -147,7 +147,7 @@ function pollForResult(taskId) {
         document.getElementById("submitBtn").disabled = false;
         alert("Error fetching results. Try again later.");
       });
-  }, 3000);
+  }, 8000);
 }
 function handleSubmitResponse(jsonArray) {
   jsonArray.forEach((entry) => {
@@ -420,4 +420,5 @@ document.getElementById("lyricsLink").addEventListener("click", () => {
 document.getElementById("closeLyrics").addEventListener("click", () => {
   document.getElementById("lyricsPanel").style.display = "none";
 });
+
 
