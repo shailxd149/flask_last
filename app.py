@@ -23,7 +23,7 @@ def home():
 
 # 🔐 Suno API config
 SUNO_API_URL = "https://api.sunoapi.org/api/v1/generate"
-API_KEY = "5a5cfe31ab6fc6df5a79c9744260e8f9"  # Replace with your actual key
+API_KEY = "4f38f53c5a59bd54601736ae1b1ad9d9"  # Replace with your actual key
 CALLBACK_URL = "https://web-production-7eaf4.up.railway.app/generate-music-callback"
 
 
@@ -180,6 +180,7 @@ def view_db():
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
+
 
 
 
