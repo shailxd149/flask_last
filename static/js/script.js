@@ -152,10 +152,10 @@ function pollForResult(taskId) {
 function handleSubmitResponse(jsonArray) {
   jsonArray.forEach((entry) => {
     if (
-      entry.callback_type === "complete" &&
       entry.audio_url &&
       entry.audio_url.trim() !== ""
     ) {
+      console.log("We are geting this object in if statement passing block",entry.audio_url);
       // Check if card already exists
       const imageUrl =
         (entry.image_url || "").trim() ||
@@ -420,3 +420,4 @@ document.getElementById("lyricsLink").addEventListener("click", () => {
 document.getElementById("closeLyrics").addEventListener("click", () => {
   document.getElementById("lyricsPanel").style.display = "none";
 });
+
