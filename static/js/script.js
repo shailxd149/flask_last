@@ -133,7 +133,7 @@ function pollForResult(taskId) {
         return res.json();
       })
       .then((json) => {
-        console.log("we are getting to json part", res.status);
+        console.log("we are getting to json part", json);
         if (!json) return; // still pending
         console.log("🎉 Generation ready:", json);
          handleSubmitResponse(json); // your existing renderer
@@ -414,6 +414,7 @@ document.getElementById("lyricsLink").addEventListener("click", () => {
 document.getElementById("closeLyrics").addEventListener("click", () => {
   document.getElementById("lyricsPanel").style.display = "none";
 });
+
 
 
 
