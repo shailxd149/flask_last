@@ -135,14 +135,12 @@ function pollForResult(taskId) {
       .then((json) => {
         console.log("we are getting to json part", json);
         if (!json || json.status !== "done") return; // still pending
-        clearInterval(interval);
         console.log("🎉 Generation ready:", json);
-        handleSubmitResponse(json); // your existing renderer
-        document.getElementById("section-spinner").style.display = "none";
+         handleSubmitResponse(json); // your existing renderer
+         document.getElementById("section-spinner").style.display = "none";
         document.getElementById("submitBtn").disabled = false;
       })
       .catch((err) => {
-        clearInterval(interval);
         console.error("Polling error:", err);
         document.getElementById("section-spinner").style.display = "none";
         document.getElementById("submitBtn").disabled = false;
@@ -421,6 +419,7 @@ document.getElementById("lyricsLink").addEventListener("click", () => {
 document.getElementById("closeLyrics").addEventListener("click", () => {
   document.getElementById("lyricsPanel").style.display = "none";
 });
+
 
 
 
