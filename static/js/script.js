@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function pollForResult(taskId) {
   console.log("polling started", taskId);
   let attempts = 0;
-  const maxAttempts = 50;
+  const maxAttempts = 30;
   const interval = setInterval(() => {
     if (attempts >= maxAttempts) {
       console.log("⏹️ Max polling attempts reached.");
@@ -113,7 +113,8 @@ function pollForResult(taskId) {
           const tracks = Array.isArray(data) ? data : Object.values(data);
           handleSubmitResponse(tracks); // ✅ Final render
         });
-
+      document.getElementById("section-spinner").style.display = "none";
+      document.getElementById("custom-spinner").style.display = "none";
       clearInterval(interval);
       return;
     }
@@ -420,5 +421,6 @@ document.getElementById("lyricsLink").addEventListener("click", () => {
 document.getElementById("closeLyrics").addEventListener("click", () => {
   document.getElementById("lyricsPanel").style.display = "none";
 });
+
 
 
