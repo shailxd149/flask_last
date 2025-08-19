@@ -133,16 +133,13 @@ function pollForResult(taskId) {
         return res.json();
       })
       .then((json) => {
-        console.log("we are getting to json part", json.status);
+        console.log("we are getting to json part", res.status);
         if (!json) return; // still pending
         console.log("🎉 Generation ready:", json);
          handleSubmitResponse(json); // your existing renderer
       })
       .catch((err) => {
         console.error("Polling error:", err);
-        document.getElementById("section-spinner").style.display = "none";
-        document.getElementById("submitBtn").disabled = false;
-        alert("Error fetching results. Try again later.");
       });
   }, 8000);
 }
@@ -417,6 +414,7 @@ document.getElementById("lyricsLink").addEventListener("click", () => {
 document.getElementById("closeLyrics").addEventListener("click", () => {
   document.getElementById("lyricsPanel").style.display = "none";
 });
+
 
 
 
