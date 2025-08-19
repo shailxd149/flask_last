@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const payload = {
       prompt: promptText,
-      genres: selectedGenres,
+      style: selectedGenres,
     };
 
     console.log("📤 Submitting to API:", payload);
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 function pollForResult(taskId) {
   console.log("polling started", taskId);
-   let attempts = 0;
+  let attempts = 0;
   const maxAttempts = 50;
   const interval = setInterval(() => {
     if (attempts >= maxAttempts) {
@@ -116,7 +116,6 @@ function pollForResult(taskId) {
 
       clearInterval(interval);
       return;
-
     }
 
     attempts++;
@@ -150,63 +149,94 @@ function pollForResult(taskId) {
       });
   }, 3000);
 }
+function handleSubmitResponse(jsonArray) {
+  jsonArray.forEach((entry) => {
+    if (
+      entry.callback_type === "complete" &&
+      entry.audio_url &&
+      entry.audio_url.trim() !== ""
+    ) {
+      // Check if card already exists
+      const imageUrl =
+        (entry.image_url || "").trim() ||
+        "https://via.placeholder.com/100x100.png?text=No+Cover";
+      const duration = entry.duration;
+      const audioUrl = entry.audio_url.trim();
+      const title = (entry.title || "Untitled Track").trim();
+      const tags = entry.tags;
+      document.getElementById("trackCard").style.display = "none";
+      const existing = document.querySelector(
+        `.track-card[data-audio-url="${entry.audio_url}"]`
+      );
+      if (existing) return; // Skip duplicate
 
-function handleSubmitResponse(response) {
-  const tracks = response.tracks || response.data?.data || [];
-  console.log("we are inside handle response");
-  // 1. Normalize track array (adjust path if your API differs)
-  if (!tracks || tracks.length === 0) {
-    return;
-  }
-  
+      const card = document.createElement("div");
+      card.className = "track-card";
+      card.setAttribute("data-audio-url", entry.audio_url); // Unique marker
 
-  // 2. Grab our DOM elements
-  const outputContainer = document.getElementById("outputContainer");
-  const lyricsPanel = document.getElementById("lyricsPanel");
-  const lyricsContent = document.getElementById("lyricsContent");
-  const closeLyricsBtn = document.getElementById("closeLyricsBtn");
+      card.innerHTML = `
+        <h4 class="track-title">${title}</h4>
+        <div class="track-row">
+          <img src="${imageUrl}" alt="Track Image" class="track-image" />
+          <audio controls class="track-audio">
+            <source src="${audioUrl}" type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+        <a href="${audioUrl}" download class="download-link">Download</a>
+        <button class="lyrics-link">Lyrics</button>
+      `;
 
-  // Close lyrics panel
-  closeLyricsBtn.addEventListener("click", () => {
-    lyricsPanel.classList.add("hidden");
+      document.getElementById("outputContainer").appendChild(card);
+      card.scrollIntoView({ behavior: "smooth" });
+    }
   });
-
-  // 3. Clear any previous content
-  outputContainer.innerHTML = "";
-
-  // 4. Render each track as a <figure>
-  tracks.forEach((track) => {
-    const figure = document.createElement("figure");
-    figure.className = "track-block";
-    const title = track.title || "Untitled Track";
-    const tags = track.tags || "";
-    const audio = track.audio_url
-      ? `<audio controls src="${track.audio_url}"></audio>`
-      : `<p style="color: #888;">⏳ Audio not ready</p>`;
-    const image = track.image_url
-      ? `<img src="${track.image_url}" width="100" style="margin-bottom: 0.5rem;">`
-      : "";
-
-    figure.innerHTML = `
-      <figcaption>
-        🎧 <strong>${track.title}</strong>
-        ${track.tags ? `— <em>${track.tags}</em>` : ""}
-      </figcaption>
-      <audio controls src="${track.audio_url}"></audio>
-      <a href="${track.audio_url}" download>Download</a>
-    `;
-
-    outputContainer.appendChild(figure);
-    console.log("We have appended the figure to output container");
-  });
-
-  // 5. If the first track carries a `prompt` (lyrics), show the panel
-  const firstLyrics = tracks[0]?.prompt || "";
-  if (firstLyrics) {
-    lyricsContent.textContent = firstLyrics;
-    lyricsPanel.classList.remove("hidden");
-  }
 }
+// 🎚️ Toggle visibility of lyrics input section based on instrumental checkbox
+// 🎚️ Toggle visibility of lyrics textarea based on instrumental checkbox
+document
+  .getElementById("instrumentalToggle")
+  .addEventListener("change", function () {
+    const lyricsInput = document.getElementById("lyricsInput");
+    if (this.checked) {
+      // ✅ Instrumental mode ON — hide lyrics textarea
+      lyricsInput.style.display = "none";
+    } else {
+      // 🎤 Instrumental mode OFF — show lyrics textarea
+      lyricsInput.style.display = "block";
+    }
+  });
+document
+  .getElementById("advancedToggle")
+  .addEventListener("change", function () {
+    const advancedSection = document.getElementById("advanced-section");
+    if (this.checked) {
+      // 🔓 Checkbox ON — show advanced sliders
+      advancedSection.style.display = "block";
+    } else {
+      // 🔒 Checkbox OFF — hide advanced sliders
+      advancedSection.style.display = "none";
+    }
+  });
+// 🎛️ Live update slider values with two decimal places
+const weirdnessSlider = document.getElementById("weirdnessSlider");
+const weirdnessValue = document.getElementById("weirdnessValue");
+
+const styleSlider = document.getElementById("styleSlider");
+const styleValue = document.getElementById("styleValue");
+
+// Initial sync
+weirdnessValue.textContent = parseFloat(weirdnessSlider.value).toFixed(2);
+styleValue.textContent = parseFloat(styleSlider.value).toFixed(2);
+
+// Update on input
+weirdnessSlider.addEventListener("input", () => {
+  weirdnessValue.textContent = parseFloat(weirdnessSlider.value).toFixed(2);
+});
+
+styleSlider.addEventListener("input", () => {
+  styleValue.textContent = parseFloat(styleSlider.value).toFixed(2);
+});
 
 // ✅ Define globally so HTML onclick can access it
 function switchMode(mode) {
@@ -304,141 +334,89 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+//custom payload submit request handleing
+document.addEventListener("DOMContentLoaded", () => {
+  const custommSubmitBtn = document.getElementById("customSubmitBtn");
+  const customSpinner = document.getElementById("custom-spinner");
+  custommSubmitBtn.addEventListener("click", () => {
+    //lyrics block collections
+    const lyricsInput = document.getElementById("lyricsInput");
+    const lyrics = lyricsInput?.value.trim() || "";
+    //style block collection
+    const stylePromptInput = document.getElementById("stylePromptInput");
+    const stylePrompt = stylePromptInput?.value.trim() || "";
+    if (!lyrics.trim() && !stylePrompt.trim()) {
+      alert("Please enter lyrics and style prompt.");
+      return;
+    }
+    const instrumentalToggle = document.getElementById("instrumentalToggle");
+    const instrumentalOnly = instrumentalToggle?.checked || false;
+    const weirdnessSlider = document.getElementById("weirdnessSlider");
 
-// 🧱 Modular collectors
-function collectLyricsBlock() {
-  const lyricsInput = document.getElementById("lyricsInput");
-  const lyrics = lyricsInput?.value.trim() || "";
+    const weirdness = parseFloat(weirdnessSlider?.value) || 0.5;
+    const styleSlider = document.getElementById("styleSlider");
+    const styleInfluence = parseFloat(styleSlider?.value) || 0.5;
+    const songTitleInput = document.getElementById("songTitle");
+    const title = songTitleInput?.value.trim() || "";
 
-  return { lyrics };
-}
-function collectInstrumentalBlock() {
-  const instrumentalToggle = document.getElementById("instrumentalToggle");
-  const instrumentalOnly = instrumentalToggle?.checked || false;
-  return { instrumentalOnly };
-}
-function collectStylesBlock() {
-  const stylePromptInput = document.getElementById("stylePromptInput");
-  const stylePrompt = stylePromptInput?.value.trim() || "";
+    const payload = {
+      prompt: lyrics,
+      style: stylePrompt,
+      title: title,
+      customMode: true,
+      instrumental: instrumentalOnly,
+      styleWeight: styleInfluence,
+      weirdnessConstraint: weirdness,
+    };
 
-  return { stylePrompt };
-}
-function collectAdvancedControls() {
-  const advancedToggle = document.getElementById("advancedToggle");
-  const showAdvanced = advancedToggle?.checked || false;
+    console.log("📤 Submitting custom load to API:", payload);
 
-  return { showAdvanced };
-}
-function collectWeirdnessControls() {
-  const weirdnessSlider = document.getElementById("weirdnessSlider");
+    // show spinner + disable button
+    customSpinner.style.display = "block";
+    custommSubmitBtn.disabled = true;
 
-  const weirdness = parseInt(weirdnessSlider?.value, 10) || 50;
-
-  return { weirdness };
-}
-function collectstyleInfluenceControls() {
-  const styleSlider = document.getElementById("styleSlider");
-  const styleInfluence = parseInt(styleSlider?.value, 10) || 50;
-  return { styleInfluence };
-}
-function collectSongTitle() {
-  const songTitleInput = document.getElementById("songTitle");
-  const title = songTitleInput?.value.trim() || "";
-  return { title };
-}
-const submitBtn = document.getElementById("customSubmitBtn");
-const spinner = document.getElementById("section-spinner"); // or "custom-spinner" if that's the correct ID
-
-//submit event listnere
-// 🚀 Submit handler
-submitBtn.addEventListener("click", () => {
-  const lyricsBlock = collectLyricsBlock();
-  const styleBlock = collectStylesBlock();
-
-  // if (!lyricsBlock && !styleBlock) {
-  //   alert("Please enter lyrics or style prompt.");
-  //   return;
-  // }
-  if (!lyricsBlock.lyrics.trim() && !styleBlock.stylePrompt.trim()) {
-    alert("Please enter lyrics or style prompt.");
-    return;
-  }
-
-  const advancedBlock = collectAdvancedControls();
-  const weirdIndex = collectWeirdnessControls();
-  const styleInfluenceIndex = collectstyleInfluenceControls();
-  const titleBlock = collectSongTitle();
-
-  const blocks = [
-    lyricsBlock,
-    styleBlock,
-    advancedBlock,
-    weirdIndex,
-    styleInfluenceIndex,
-    titleBlock,
-  ];
-  //const payload = Object.assign({}, ...blocks.filter(Boolean));
-  const payload = Object.assign({}, ...blocks);
-
-  console.log("📤 Submitting custom payload:", payload);
-
-  showSpinner();
-  submitBtn.disabled = true;
-
-  fetch("/generate-custom", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("Network error");
-      return res.json();
+    fetch("/api/simple-generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     })
-    .then((data) => {
-      console.log("✅ Custom response received:", data);
-      handleSubmitResponse(data);
-      resetFields();
-      updateSubmitState();
-    })
-    .catch((err) => {
-      console.error("❌ Custom submission failed:", err);
-      alert("Something went wrong. Please try again.");
-    })
-    .finally(() => {
-      hideSpinner();
-      submitBtn.disabled = false;
-    });
+      .then((res) => {
+        if (!res.ok) throw new Error("Network error");
+        return res.json();
+      })
+      .then((data) => {
+        console.log("✅ Custom Task started:", data);
+        const taskId = data.response?.data?.taskId;
+        console.log("🎯 Extracted custom taskId:", taskId);
+        if (taskId) {
+          console.log("we are calling pollforTask custom load");
+          // begin polling; pollForResult will clear spinner + re-enable button
+          pollForResult(taskId);
+          console.log("we are past custom pollforTask");
+        } else {
+          customSpinner.style.display = "none";
+          custommSubmitBtn.disabled = false;
+          alert("Failed to start generation (no task_id).");
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Submission failed:", err);
+        customSpinner.style.display = "none";
+        custommSubmitBtn.disabled = false;
+        alert("Something went wrong. Please try again.");
+      });
+  });
 });
-// ⏳ Spinner control
-function showSpinner() {
-  spinner.style.display = "block";
-}
+document.getElementById("lyricsLink").addEventListener("click", () => {
+  const lyricsPanel = document.getElementById("lyricsPanel");
+  const lyricsBody = document.getElementById("lyricsBody");
 
-function hideSpinner() {
-  spinner.style.display = "none";
-}
+  // Inject lyrics content (can be dynamic later)
+  lyricsBody.textContent = `Muse in the Wires\nFrom A to Z (Extended)\n\nVerse 1...\nChorus...\nBridge...`;
 
-// 🧼 Reset fields
-function resetFields() {
-  lyricsInput.value = "";
-  instrumentalToggle.checked = false;
-  stylePromptInput.value = "";
-  weirdnessSlider.value = 50;
-  styleSlider.value = 50;
-  advancedToggle.checked = false;
-  songTitleInput.value = "";
-}
+  lyricsPanel.style.display = "flex";
+});
 
-
-
-
-
-
-
-
-
-
-
-
+document.getElementById("closeLyrics").addEventListener("click", () => {
+  document.getElementById("lyricsPanel").style.display = "none";
+});
